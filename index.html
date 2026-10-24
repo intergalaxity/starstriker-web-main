@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starstriker</title>
     
-    <!-- Dynamic Black Square Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/></svg>" type="image/svg+xml">
     
-    <!-- JetBrains Mono Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -32,7 +30,6 @@
             flex-direction: column;
         }
 
-        /* Top Left Header Text */
         .header-title {
             position: absolute;
             top: 24px;
@@ -43,7 +40,6 @@
             user-select: none;
         }
 
-        /* Container for Middle-Left Navigation */
         .nav-container {
             position: absolute;
             top: 50%;
@@ -64,7 +60,6 @@
             width: 100%;
         }
 
-        /* Button Hover Styling */
         .nav-button {
             background-color: #000000;
             color: #ffffff;
@@ -85,7 +80,6 @@
             color: #000000;
         }
 
-        /* Branch Tree Container */
         .sub-menu {
             display: flex;
             flex-direction: column;
@@ -107,13 +101,12 @@
             margin-bottom: 8px;
         }
 
-        /* Vertical branch tree line */
         .sub-menu::before {
             content: "";
             position: absolute;
             left: 12px;
             top: 0;
-            bottom: 18px; /* Cuts off exactly at the center of the last item */
+            bottom: 18px;
             width: 1px;
             background-color: #444444;
         }
@@ -125,7 +118,6 @@
             align-items: center;
         }
 
-        /* Horizontal branch connector line */
         .sub-item::before {
             content: "";
             position: absolute;
@@ -146,7 +138,6 @@
             color: #000000;
         }
 
-        /* About Text Block in Branch */
         .about-text {
             color: #aaaaaa;
             font-size: 0.85rem;
@@ -156,7 +147,6 @@
             user-select: text;
         }
 
-        /* Right Content Panel for Displaying Releases */
         .content-panel {
             position: fixed;
             top: 50%;
@@ -277,7 +267,6 @@
             pointer-events: none;
         }
 
-        /* ASCII Art Background Styling */
         .ascii-art-container {
             position: fixed;
             bottom: -50px;
@@ -342,12 +331,9 @@
 </head>
 <body>
 
-    <!-- Top Left Header -->
     <div class="header-title">Starstriker</div>
 
-    <!-- Middle Left Navigation -->
     <nav class="nav-container">
-        <!-- Music Section -->
         <div class="nav-item">
             <button class="nav-button" id="music-toggle" aria-expanded="false">Music</button>
             <div class="sub-menu" id="music-menu">
@@ -361,7 +347,6 @@
             </div>
         </div>
 
-        <!-- Socials Section -->
         <div class="nav-item">
             <button class="nav-button" id="socials-toggle" aria-expanded="false">Socials</button>
             <div class="sub-menu" id="socials-menu">
@@ -374,7 +359,6 @@
             </div>
         </div>
 
-        <!-- About Section -->
         <div class="nav-item">
             <button class="nav-button" id="about-toggle" aria-expanded="false">About</button>
             <div class="sub-menu" id="about-menu">
@@ -384,7 +368,6 @@
             </div>
         </div>
 
-        <!-- External Section -->
         <div class="nav-item">
             <button class="nav-button" id="external-toggle" aria-expanded="false">External</button>
             <div class="sub-menu" id="external-menu">
@@ -395,7 +378,6 @@
             </div>
         </div>
 
-        <!-- Upcoming Music Section -->
         <div class="nav-item">
             <button class="nav-button" id="upcoming-toggle" aria-expanded="false">Upcoming Music</button>
             <div class="sub-menu" id="upcoming-menu">
@@ -406,7 +388,6 @@
         </div>
     </nav>
 
-    <!-- ASCII Art Display -->
     <pre class="ascii-art-container">
                                                                                   .:=*#**+=-:..                                                                  
                                                                                   :=%@@@@@@%*+-:..                                                               
@@ -498,7 +479,6 @@
            ...        ..:*-::..        ..:-:...                                          ..:-*%@@@#=:                                ..:-+:..                    
     </pre>
 
-    <!-- Blue Money Content Panel -->
     <div class="content-panel" id="blue-money-panel">
         <img src="https://f4.bcbits.com/img/a2827531189_10.jpg" alt="Blue Money EP Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Blue+Money'">
         
@@ -527,8 +507,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Sirenic Content Panel -->
+    
     <div class="content-panel" id="sirenic-panel">
         <img src="https://f4.bcbits.com/img/a2141484244_10.jpg" alt="Sirenic EP Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Sirenic'">
         
@@ -554,7 +533,6 @@
         </div>
     </div>
 
-    <!-- Nihilism Content Panel -->
     <div class="content-panel" id="nihilism-panel">
         <img src="https://f4.bcbits.com/img/a2817701513_10.jpg" alt="Nihilism Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Nihilism'">
         
@@ -585,7 +563,6 @@
         </div>
     </div>
 
-    <!-- Pessimistic, Vol. 1 Content Panel -->
     <div class="content-panel" id="pessimistic-v1-panel">
         <img src="https://f4.bcbits.com/img/a2360673902_10.jpg" alt="Pessimistic, Vol. 1 Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Pessimistic+Vol+1'">
         
@@ -618,7 +595,6 @@
         </div>
     </div>
 
-    <!-- Blue Money (Deluxe Edition) Content Panel -->
     <div class="content-panel" id="blue-money-deluxe-panel">
         <img src="https://f4.bcbits.com/img/a1570539927_10.jpg" alt="Blue Money (Deluxe Edition) Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Blue+Money+Deluxe'">
         
@@ -641,7 +617,6 @@
                 <div class="track-item"><span class="track-title">10. Sparked (Re-Edit)</span> <span class="track-time">01:49</span></div>
                 <div class="track-item"><span class="track-title">11. Cash (Re-Edit)</span> <span class="track-time">03:45</span></div>
                 <div class="track-item"><span class="track-title">12. Rage (Re-Edit)</span> <span class="track-time">01:07</span></div>
-    <!-- ASCII Art Background -->
     <div class="ascii-art-container" id="ascii-container"></div>
 
     <script>
@@ -797,8 +772,7 @@
                 });
             }
         });
-
-        // Release panel toggle logic
+        
         Object.entries(panels).forEach(([btnId, panelId]) => {
             const btn = document.getElementById(btnId);
             const panel = document.getElementById(panelId);
@@ -806,14 +780,12 @@
             if (btn && panel) {
                 btn.addEventListener('click', () => {
                     const isActive = panel.classList.contains('active');
-                    
-                    // Hide all panels
+
                     Object.values(panels).forEach(pId => {
                         const p = document.getElementById(pId);
                         if (p) p.classList.remove('active');
                     });
 
-                    // Toggle clicked panel if it wasn't active
                     if (!isActive) {
                         panel.classList.add('active');
                     }
