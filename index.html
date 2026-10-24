@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starstriker</title>
+    
+    <!-- Dynamic Black Square Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='black'/></svg>" type="image/svg+xml">
+    
+    <!-- JetBrains Mono Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 400;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Left Header Text */
+        .header-title {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+            font-size: 1.25rem;
+            color: #ffffff;
+            letter-spacing: 0.05em;
+            user-select: none;
+        }
+
+        /* Container for Middle-Left Navigation */
+        .nav-container {
+            position: absolute;
+            top: 50%;
+            left: 32px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 600px;
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* Button Hover Styling */
+        .nav-button {
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.15s ease, color 0.15s ease;
+            outline: none;
+            display: inline-block;
+            text-decoration: none;
+            border-radius: 0px;
+        }
+
+        .nav-button:hover {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        /* Branch Tree Container */
+        .sub-menu {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            padding-left: 28px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.35s ease;
+            width: 100%;
+        }
+
+        .sub-menu.open {
+            max-height: 1200px;
+            opacity: 1;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        /* Vertical branch tree line */
+        .sub-menu::before {
+            content: "";
+            position: absolute;
+            left: 12px;
+            top: 0;
+            bottom: 18px; /* Cuts off exactly at the center of the last item */
+            width: 1px;
+            background-color: #444444;
+        }
+
+        .sub-item {
+            position: relative;
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Horizontal branch connector line */
+        .sub-item::before {
+            content: "";
+            position: absolute;
+            left: -16px;
+            top: 50%;
+            width: 12px;
+            height: 1px;
+            background-color: #444444;
+        }
+
+        .sub-button {
+            font-size: 0.875rem;
+            padding: 6px 12px;
+            color: #cccccc;
+        }
+
+        .sub-button:hover {
+            color: #000000;
+        }
+
+        /* About Text Block in Branch */
+        .about-text {
+            color: #aaaaaa;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            padding: 8px 12px;
+            max-width: 480px;
+            user-select: text;
+        }
+
+        /* Right Content Panel for Displaying Releases */
+        .content-panel {
+            position: fixed;
+            top: 50%;
+            right: 64px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 20px;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            z-index: 10;
+            padding-right: 8px;
+        }
+
+        .content-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        .content-panel.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .cover-art {
+            width: 320px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 0px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+        }
+
+        .album-details {
+            width: 100%;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .album-header-title {
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .album-meta-type {
+            font-size: 0.8rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .tracklist {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #cccccc;
+            margin: 8px 0;
+        }
+
+        .track-item {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+        }
+
+        .track-title {
+            color: #dddddd;
+        }
+
+        .track-time {
+            color: #777777;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .listen-links-title {
+            font-size: 0.8rem;
+            color: #888888;
+            margin-top: 8px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .listen-links {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .listen-link {
+            color: #ffffff;
+            text-decoration: underline;
+            font-size: 0.825rem;
+            transition: color 0.15s ease;
+        }
+
+        .listen-link:hover {
+            color: #aaaaaa;
+        }
+
+        .listen-link.disabled {
+            color: #555555;
+            text-decoration: line-through;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ASCII Art Background Styling */
+        .ascii-art-container {
+            position: fixed;
+            bottom: -50px;
+            right: -80px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 8px;
+            line-height: 7px;
+            letter-spacing: 0px;
+            color: #888888;
+            user-select: none;
+            pointer-events: auto;
+            z-index: 1;
+            white-space: pre;
+            opacity: 0.85;
+            transition: opacity 0.3s ease;
+        }
+
+        .ascii-char {
+            display: inline-block;
+            transition: color 0.1s ease, text-shadow 0.1s ease, transform 0.1s ease;
+            cursor: default;
+        }
+
+        .ascii-char:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 8px #ffffff, 0 0 12px #ffffff;
+            transform: scale(1.4);
+            z-index: 20;
+            position: relative;
+        }
+
+        @media (max-width: 900px) {
+            .content-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                transform: none;
+                margin-top: 32px;
+                margin-left: 32px;
+                align-items: flex-start;
+                max-width: calc(100vw - 64px);
+                max-height: none;
+            }
+            .album-details {
+                text-align: left;
+            }
+            .track-item {
+                justify-content: flex-start;
+            }
+            .listen-links {
+                justify-content: flex-start;
+            }
+            .ascii-art-container {
+                opacity: 0.08;
+                font-size: 3.5px;
+                line-height: 3px;
+                bottom: -40px;
+                right: -60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Left Header -->
+    <div class="header-title">Starstriker</div>
+
+    <!-- Middle Left Navigation -->
+    <nav class="nav-container">
+        <!-- Music Section -->
+        <div class="nav-item">
+            <button class="nav-button" id="music-toggle" aria-expanded="false">Music</button>
+            <div class="sub-menu" id="music-menu">
+                <div class="sub-item"><button class="nav-button sub-button" id="blue-money-btn">Blue Money</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="sirenic-btn">Sirenic</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="nihilism-btn">Nihilism</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="pessimistic-v1-btn">Pessimistic, Vol. 1</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="blue-money-deluxe-btn">Blue Money (Deluxe Edition)</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="whimsy-btn">Whimsy</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="broken-btn">Broken</button></div>
+            </div>
+        </div>
+
+        <!-- Socials Section -->
+        <div class="nav-item">
+            <button class="nav-button" id="socials-toggle" aria-expanded="false">Socials</button>
+            <div class="sub-menu" id="socials-menu">
+                <div class="sub-item"><a href="https://starstriker.bandcamp.com/" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">Bandcamp</a></div>
+                <div class="sub-item"><a href="https://open.spotify.com/artist/5OK2ZBgMZqhsUS5lJl5DQa" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">Spotify</a></div>
+                <div class="sub-item"><a href="https://music.apple.com/us/artist/starstriker/6778208103" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">Apple Music</a></div>
+                <div class="sub-item"><a href="https://www.instagram.com/xstarstriker" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">Instagram</a></div>
+                <div class="sub-item"><a href="https://www.youtube.com/@xstarstriker" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">YouTube</a></div>
+                <div class="sub-item"><a href="https://discord.gg/tr4QbT5nt4" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">Discord</a></div>
+            </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="nav-item">
+            <button class="nav-button" id="about-toggle" aria-expanded="false">About</button>
+            <div class="sub-menu" id="about-menu">
+                <div class="sub-item about-text">
+                    Starstriker is an American independent electronic music duo consisting of THE peanut and infadistic (Vortex Child), releasing their first EP, Blue Money on January 2, 1902. A fairly irrelevant release later, they released their 3rd EP, Nihilism, on May 17th 1903. In recent days, the duo has released Pessimistic, Vol 1, and plans to release more music soon.
+                </div>
+            </div>
+        </div>
+
+        <!-- External Section -->
+        <div class="nav-item">
+            <button class="nav-button" id="external-toggle" aria-expanded="false">External</button>
+            <div class="sub-menu" id="external-menu">
+                <div class="sub-item"><a href="https://the-peanut.bandcamp.com/" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">THEpeanut's Bandcamp</a></div>
+                <div class="sub-item"><a href="https://infadistic.bandcamp.com/" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">infadistic's Bandcamp</a></div>
+                <div class="sub-item"><a href="https://osu.ppy.sh/users/38178122" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">THEpeanut's osu! account</a></div>
+                <div class="sub-item"><a href="https://osu.ppy.sh/users/34046545" target="_blank" rel="noopener noreferrer" class="nav-button sub-button">infadistic's osu! account</a></div>
+            </div>
+        </div>
+
+        <!-- Upcoming Music Section -->
+        <div class="nav-item">
+            <button class="nav-button" id="upcoming-toggle" aria-expanded="false">Upcoming Music</button>
+            <div class="sub-menu" id="upcoming-menu">
+                <div class="sub-item"><button class="nav-button sub-button" id="motion-btn">Motion</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="pv2-btn">Pessimistic, Vol. 2</button></div>
+                <div class="sub-item"><button class="nav-button sub-button" id="tpshm-btn">THE PAST STILL HAUNTS ME</button></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ASCII Art Display -->
+    <pre class="ascii-art-container">
+                                                                                  .:=*#**+=-:..                                                                  
+                                                                                  :=%@@@@@@%*+-:..                                                               
+                                                            ..                    .-*@@@@@@@@@@*+-:..  ............                                              
+                                                         ...::..                  ..-+%@@@@%@@@@@%+-.......:.::--::....                                ..        
+                                                       ...:-...                     .:=*@@@@%###%@#-:.......::--=++*=:..                               ..        
+                                                       ..:...            .....       ..:=*@@@@%*+=-:.::==+=-::-+******:..                                        
+                                                          .             ..:::::.....   ..:=*@@@@#+-::-*@@@%*=-::-*++**+:..                                       
+                                                                         ..:==++=-::..   ..:=*%@@@%#*==+#@@@@#+=--++++#:..                                       
+                                                                       .....::-=*-::.......:::=*%@@@@#+==+*%@@@%*+====+-..                                       
+                                                                 ........:.::-=---::::=::::-..:-**%@@@@#+===+#@@@@#**==-..                                       
+                                                          ..........:.....................-:..:-::-+#@@@@%*=-=+*%@@@%*+-..                                       
+                                                        ....:--:.............:::..     ...:.........:=*%@@@@#+=-=*#@@#%+=-..                                     
+         ...                                            ....::.......:-::........      ..........   ..:-+#@@@@%*+===*%@@@#+-:.                                   
+       ..:...                                            ..........::-:.....          .....     ....   ..:=+#@@@@%*+++*%@@@#+-:.                                 
+       .--:..                                      .......    ....::....             .......    ....      .:-+#@@@@@#*++*%@@@#+-:.                               
+       ..:...                                    ...:=---......:......               ..:-=:...              ..:+*#@@@@@#**#%@@@%+-:.                             
+        ....                                   ...:===-:::-:--:...                    ...::+:..               ..:==*#@@@@@%#%@@@@#+-..                           
+                                             ....:::-::-=--=:...                         ..:=...                ...:-=*#@@@@@@@@@@@*=:.                          
+                                            .......::=-:-+:...                           ...=:..                    ..:-=+#@@@@@@@@@#=:.                         
+                                       ...   .....:=-::=-:..                              ..-:..      ......       ....:::-=+*%@@@@@@=:.                         
+                                     ...-.......:--::-+:..         ...                    ...=..      ..:-..        ..-:-:...:-=++*+=:.                          
+                                    ...:.....:-+=:-+=+-:..       ...:..                    ..:...     ..:-:..   .......-::..   .......                           
+                                    ..:-...-==*=-:-=+**::.       ..--..                    ..::..      ..:=... ..::::...=:..                                     
+                                   ..:=:-::==*+==-+==+-*-..     ..:=:..                    ...=...     ...=:.....:::::..:-...                                    
+                                   ..-=+-:-=*++***+-+-:::..    ..:=:..   .                  ...:..      ..:=... .........:-...                                   
+                                   .:=+*=--+=+*##**=*=::...   ..:==:..  ....                 ..:...     ...-:..     ......-:..                                   
+                                  ..:+++=--+=##**#*+#+-:..    .:-*-:.........         ....   ..:-..      ..:=...      ....:=...                                  
+                                  ..:++==-++++#+#***#+-:...  ..:+%=-:........        ..:...  ...+:..     ..:*:.............:-..                                  
+                                   .:===*==+**+=*=**#=--:..  ..-*+#=--.......      ...:-...   ..:=...    ...:-....:.......::-:..                                 
+                                   .:-==++===*--*=#@#+==:.. ..:=-=#=**::::...     ..:-:=...   ...=:..     ..:=::..-.......:=-=:..                                
+                                   ..--==+==+=-==+##++==:.. ..:=--+==#=-::...     ..=::-..     ..:+:..    ..:*-::.-........:===:..                               
+                                   ..:-:-+*-::-=+=---+=+-....:*--:-=-*-+-::..    ..:+-+:..     ..:=:..    ..:+*-:.:-.......::*++:..                              
+                                   ...::::+:........:++*-:..:-=+-:-=--=--+:..    ..---+:....    ..:-...    .:-+=:..:-:::-...::=:=:..                             
+                                    ....:-:..      .:=+#=::-=+=-:::-=-=---:..   ..:--=:::=:..    ..=:..    .:-**::::=-:-=:...:=::..                              
+                                     ..:=:..       .:-++*::::++=::.:--=--=:.   ..::===::-*:..    ..:=...   .:=*==::-=+=++:...:-=...                     .........
+                                    ..:+:...       ..:==+-:::-++=::.:-*=+-..  ..:*-*+:::=#-:.    ...-:..   .:=+=+-:-*+*=*:...::+:..                   ...........
+                                    ..:+::..        ..-==+-::--=*+-::-+=+:..  ..:#-*-:::=#-:.     ..:=...  ..:*==+--=#+**:...:--:..                ........      
+                                    ..:+:--..       ..:=-++*===*%%**--+==:.   .:-*=+:.::*+:..      ..=:..  ..:+==+=--*#+=::.:-+--..               .......        
+                                    ..:=:::..        ..::-+***+#%%***=++:..  ..:=++=:.:-+-:.       ...:..   ..:---+--=+*+-::-+-+-:..              ......         
+                                    ...-:...           ..:=*=*=-==--=-+-:.....:-*=*-:..-=:..     ....:-.........:-=+--*+**-=-::--:..              ...............
+                                     ..::..             ..::=:::....::=:...::-=*+=*::..:........:::==:-:....=....:-==--+++*-:..:=-..              ...............
+                                     ..::..              ...-:......:*::::--=+=-+-*::..:::::::-=**===*=-:...:-...:--*--==*==:...=:..            .................
+                                     ..::....             ..... ...:+---=+=**=--+=+-:--=***=+*++*=**=-+-=.....=:...:-=+----+*:...:-..           ...:.......     ..
+                                     ...=:::....               ..:-+==+#++===+#*#=*=-+*=--==*====-::-+::.....:=...:-==+-:-=-=:...-..           ..........        
+                                     ...::-++::.....         ...:+==***+**=*++==*=+::..::::::::-+:::-:...  ...:...:-=+=+-----:.....             ........         
+                                    ...::-====-:::::.........::=*+=---=+**+*=--=*==:.. .......:-:::-+:..   ...=...:+-+-==:--:..                 .........        
+                                     ......:::::-+-=*--=+====+*++*-:::-#*+=----=*=+:..   ....:-=::-+=:..  ..:-=..:====::=--::..                  ..........      
+                                 ..........::-+=*+*+*+**=----------==+++=------=*=+-:......::-=::-*=+:.. ..:++::::-++:::-*-:..                    .....::..      
+                         .........::::-=======----==%+***=====--::::--+=-----=+=*=+-*:..:+---+---+--+:...::+++---**=+::::+*-:..                      .....       
+                       ..:-=-=====-----=======-::::::::::............::=++===*++*=*=++:::===+--==--::...:==+=+=*+***==:::-*+-:.                                  
+                      ..:-=----===+=::::...............              ....::-+*++*=*==*-::-*+--+--::::::==-+=#+*****+*=+---**+:..                                 
+                    ...-==-:::...........                                ....:::--*==**-::+-=---::::-+=-=+=+=**++*=#**+*==+**+:.                                 
+                    ..:::......                                               ...:-*=**=::==-----=+=====*=+=*+==++--++***#+#**:..                                
+                    ..:=..........                                              ..:-+*+*-:-*+=====+**+*==+---===*-::.::=#*****=:.                                
+                     ..-:.......=:.                                              ..:-*#=*---=--=****#+**-----==**-:. ...:-****+:..                               
+                     ..:=:........                                                ..:-++==-:+::::=------:::--=+**-:.   ..:-+#**+:..                              
+                     ...-:...                                                       ..:=*+=--+:..::+--:::::--=++*:..     .:=%*#++:..                             
+                      ..:+...                                                        ..:-===---:...:-+--:::--=+++-:.     .:=%#*=-=:..                            
+                      ..:=:..                                                         ...:::=-=-:...::==-----++++-:.     .:=%%=:::-:..                ...        
+                       ..:-:..                                                           ...:+-=-:.....:=---==*+=*:..    .:=%+-....-:..              .....       
+                       ..:=:..                                        ............         ..:-===:.. ..:-+===+*+==:..   .:-+::.  ....                ...        
+                        ..:+:..                                 ........:----::.....         ..::-=..   ..:-+=+****=:... ..::..                                  
+                         ..--..                            ......::--=:.......::--:.           ......    ..::++#*#*#+-:.......                                   
+                         ..:+:..                       .....::-+=::..................                      ..-*#**+==+---==:..                                   
+                          ..:=:..                  .....::==::......             ...                        .:-**+*-:::-:....                                    
+                          ..:=:.........       .....:-+-::....                              ......           .:-++*-:....                                        
+                           ..:+:::::....    ....::+-:.....                                  ..:=...           ..:=*+=:..                                         
+                            ..--:.....  ....::=-::....                          .            ...:...           ..::=++-:..                                       
+                            ..:=:.. ....::-+-:....                                     .....   ...=...        ....:::-+=::...   .....                            
+                             ..:+::..::=*=-:... .......                               ..:-:..   ...=:...      ..:==:::::-=-:.....:::..                           
+                              ..:--==-::-=:..  ..:=+=:..                              .:-#-:..   ...:-...     ..::+==::::::==::......                            
+        .                      ..:::::--+:.. ..:-+*##=:.                              .:-*%=:.     ...-:...    ...:==+-::...::==:::...                           
+      .....                    .:-=+++**-:...:=+%%@%=-..                               :=*@%+-.     ...:-:...    ..:-+==:.......:=-::.....                       
+      .....                   ..-*#%%%%=::::-=+#@@*%=:.                               .:+%@@%+-.      ...--...    ..::+=*::... ....:==--:.....                   
+     .......               ...::=+#@@@+-::=#%#++*##+:..                              .:=#@@@@%+-..      ..:-:...    ..:=-==:..    ......::=-:..                  
+   ........               ..:==*++%+*+-:.::----=*%*-..                              .:=*@@%%@@%+-:.      ...:-....   ..::+-+-..       .....:+:..                 
+   ........               ..:+@%**==+:........:-#*-:.                              .:=*@@%*+#%@@*=:..      ....:.........:==-:...        ..:=...                 
+  ........            ......:-+#---*:..    ..:-=**:..                             .:=#@@@*=-#+#@@%*=:..      ...-+::.......:-=::...      ..-:..                  
+..........         ...::::::::::::=:..     ..:++*=:.                            ..:=#@@@*=--#*+*%@@%+-:.       ...:-=-.......:=-::....  ..:-:..                  
+.......          ...:----::......=:..      ..:+**-:.                          ..:=*@@@@*=-=*@@*++*%@@#+-..       .....:==:....::==:::.....:=:..                  
+                ..:===--::......:-..       ..::-=:..                         ..-+@@@@@#=:=#@@@@%+++%@@@*-..          ....:---::::::==::::::=:..                  
+               ..-====-:...  ..:=...      ...:-::..                         ..-**@@@@@#+-:-+%@@*==+%@@@#=:.             .....:--:::::::::-=-..                   
+              .:-====:...   ...-...      ...::-:..                           ..:-=*%@@@@*=--=##==+#@@@*=:...:..             .....-::.:::-+-:..                   
+            ..::===-:..     ..::..       ..::=:...                              ..:=*@@@@%*=--+=*%@@%+-.....=..                ...=::::--+:..                    
+           ...:-=-:..     ...::..       ...:-:...                                 ..:=*%@@@%*++*%@@#+:.  ..:...                  ....::--+:..                    
+           ..::....      ...--..        ...:::..                                    ..:=+#@@@@%%@@%+-.    ...                      ..::-+:..                     
+           .....       ...-=:...       ...:-:..                                        .:-=*%@@@@@#=:                               ..:=::..                     
+           ...        ..:*-::..        ..:-:...                                          ..:-*%@@@#=:                                ..:-+:..                    
+    </pre>
+
+    <!-- Blue Money Content Panel -->
+    <div class="content-panel" id="blue-money-panel">
+        <img src="https://f4.bcbits.com/img/a2827531189_10.jpg" alt="Blue Money EP Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Blue+Money'">
+        
+        <div class="album-details">
+            <div>
+                <div class="album-header-title">Blue Money</div>
+                <div class="album-meta-type">EP</div>
+            </div>
+
+            <div class="tracklist">
+                <div class="track-item"><span class="track-title">1. Big Hitter</span> <span class="track-time">01:18</span></div>
+                <div class="track-item"><span class="track-title">2. Sparked</span> <span class="track-time">01:44</span></div>
+                <div class="track-item"><span class="track-title">3. Cash</span> <span class="track-time">02:37</span></div>
+                <div class="track-item"><span class="track-title">4. Staggered</span> <span class="track-time">01:23</span></div>
+                <div class="track-item"><span class="track-title">5. Rage</span> <span class="track-time">01:21</span></div>
+                <div class="track-item"><span class="track-title">6. CuteFace.mp3</span> <span class="track-time">01:09</span></div>
+            </div>
+
+            <div>
+                <div class="listen-links-title">Listen On</div>
+                <div class="listen-links">
+                    <a href="https://starstriker.bandcamp.com/album/blue-money" target="_blank" rel="noopener noreferrer" class="listen-link">Bandcamp</a>
+                    <a href="https://open.spotify.com/album/5p31Ukbucf5YPFu3W4jemW" target="_blank" rel="noopener noreferrer" class="listen-link">Spotify</a>
+                    <a href="https://music.apple.com/us/album/blue-money-ep/6778208102" target="_blank" rel="noopener noreferrer" class="listen-link">Apple Music</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sirenic Content Panel -->
+    <div class="content-panel" id="sirenic-panel">
+        <img src="https://f4.bcbits.com/img/a2141484244_10.jpg" alt="Sirenic EP Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Sirenic'">
+        
+        <div class="album-details">
+            <div>
+                <div class="album-header-title">Sirenic</div>
+                <div class="album-meta-type">EP</div>
+            </div>
+
+            <div class="tracklist">
+                <div class="track-item"><span class="track-title">1. Sirenic</span> <span class="track-time">03:04</span></div>
+                <div class="track-item"><span class="track-title">2. Lainted</span> <span class="track-time">03:16</span></div>
+            </div>
+
+            <div>
+                <div class="listen-links-title">Listen On</div>
+                <div class="listen-links">
+                    <a href="https://starstriker.bandcamp.com/album/sirenic" target="_blank" rel="noopener noreferrer" class="listen-link">Bandcamp</a>
+                    <a href="https://open.spotify.com/album/1wfBYlVB6aPZppYNOsmEnc" target="_blank" rel="noopener noreferrer" class="listen-link">Spotify</a>
+                    <a href="https://music.apple.com/us/album/sirenic-single/6807551302" target="_blank" rel="noopener noreferrer" class="listen-link">Apple Music</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nihilism Content Panel -->
+    <div class="content-panel" id="nihilism-panel">
+        <img src="https://f4.bcbits.com/img/a2817701513_10.jpg" alt="Nihilism Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Nihilism'">
+        
+        <div class="album-details">
+            <div>
+                <div class="album-header-title">Nihilism</div>
+                <div class="album-meta-type">Album</div>
+            </div>
+
+            <div class="tracklist">
+                <div class="track-item"><span class="track-title">1. Panthera</span> <span class="track-time">00:41</span></div>
+                <div class="track-item"><span class="track-title">2. Just Mash Shit</span> <span class="track-time">02:31</span></div>
+                <div class="track-item"><span class="track-title">3. Bits and Pieces</span> <span class="track-time">02:37</span></div>
+                <div class="track-item"><span class="track-title">4. Rezonance</span> <span class="track-time">00:30</span></div>
+                <div class="track-item"><span class="track-title">5. Nil</span> <span class="track-time">02:47</span></div>
+                <div class="track-item"><span class="track-title">6. Absolute Truth</span> <span class="track-time">01:43</span></div>
+                <div class="track-item"><span class="track-title">7. Love Made U Hate</span> <span class="track-time">03:35</span></div>
+            </div>
+
+            <div>
+                <div class="listen-links-title">Listen On</div>
+                <div class="listen-links">
+                    <a href="https://starstriker.bandcamp.com/album/nihilism" target="_blank" rel="noopener noreferrer" class="listen-link">Bandcamp</a>
+                    <a href="https://open.spotify.com/album/6ktm3q8Cmr4OZCObx0UJHz" target="_blank" rel="noopener noreferrer" class="listen-link">Spotify</a>
+                    <a href="https://music.apple.com/us/album/nihilism/6807759520" target="_blank" rel="noopener noreferrer" class="listen-link">Apple Music</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pessimistic, Vol. 1 Content Panel -->
+    <div class="content-panel" id="pessimistic-v1-panel">
+        <img src="https://f4.bcbits.com/img/a2360673902_10.jpg" alt="Pessimistic, Vol. 1 Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Pessimistic+Vol+1'">
+        
+        <div class="album-details">
+            <div>
+                <div class="album-header-title">Pessimistic, Vol. 1</div>
+                <div class="album-meta-type">Album</div>
+            </div>
+
+            <div class="tracklist">
+                <div class="track-item"><span class="track-title">1. Broken</span> <span class="track-time">03:06</span></div>
+                <div class="track-item"><span class="track-title">2. Ripperetive Syndrome</span> <span class="track-time">03:57</span></div>
+                <div class="track-item"><span class="track-title">3. This Blood Flow</span> <span class="track-time">02:30</span></div>
+                <div class="track-item"><span class="track-title">4. Surge Rhythm</span> <span class="track-time">02:47</span></div>
+                <div class="track-item"><span class="track-title">5. Luxurious Decay</span> <span class="track-time">01:04</span></div>
+                <div class="track-item"><span class="track-title">6. I Don't Know (Scatter Your Mind)</span> <span class="track-time">02:04</span></div>
+                <div class="track-item"><span class="track-title">7. Slowly Give Up</span> <span class="track-time">01:27</span></div>
+                <div class="track-item"><span class="track-title">8. Throwaway</span> <span class="track-time">00:20</span></div>
+                <div class="track-item"><span class="track-title">9. This Song Was Directly Inspired By 3mouth</span> <span class="track-time">01:04</span></div>
+            </div>
+
+            <div>
+                <div class="listen-links-title">Listen On</div>
+                <div class="listen-links">
+                    <a href="https://starstriker.bandcamp.com/album/pessimistic-vol-1" target="_blank" rel="noopener noreferrer" class="listen-link">Bandcamp</a>
+                    <a href="https://open.spotify.com/album/5GbRmcA4MCuLY0fUCZEBb9" target="_blank" rel="noopener noreferrer" class="listen-link">Spotify</a>
+                    <a href="https://music.apple.com/us/album/pessimistic-vol-1/6810378414" target="_blank" rel="noopener noreferrer" class="listen-link">Apple Music</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blue Money (Deluxe Edition) Content Panel -->
+    <div class="content-panel" id="blue-money-deluxe-panel">
+        <img src="https://f4.bcbits.com/img/a1570539927_10.jpg" alt="Blue Money (Deluxe Edition) Cover" class="cover-art" onerror="this.src='https://placehold.co/320x320/111/fff?text=Blue+Money+Deluxe'">
+        
+        <div class="album-details">
+            <div>
+                <div class="album-header-title">Blue Money (Deluxe Edition)</div>
+                <div class="album-meta-type">Album</div>
+            </div>
+
+            <div class="tracklist">
+                <div class="track-item"><span class="track-title">1. Big Hitter</span> <span class="track-time">01:18</span></div>
+                <div class="track-item"><span class="track-title">2. Sparked</span> <span class="track-time">01:44</span></div>
+                <div class="track-item"><span class="track-title">3. Cash</span> <span class="track-time">02:37</span></div>
+                <div class="track-item"><span class="track-title">4. Staggered</span> <span class="track-time">01:23</span></div>
+                <div class="track-item"><span class="track-title">5. Rage</span> <span class="track-time">01:21</span></div>
+                <div class="track-item"><span class="track-title">6. CuteFace.mp3</span> <span class="track-time">01:09</span></div>
+                <div class="track-item"><span class="track-title">7. Fear</span> <span class="track-time">01:27</span></div>
+                <div class="track-item"><span class="track-title">8. Keep Me Close</span> <span class="track-time">03:06</span></div>
+                <div class="track-item"><span class="track-title">9. Big Hitter (Re-Edit)</span> <span class="track-time">01:18</span></div>
+                <div class="track-item"><span class="track-title">10. Sparked (Re-Edit)</span> <span class="track-time">01:49</span></div>
+                <div class="track-item"><span class="track-title">11. Cash (Re-Edit)</span> <span class="track-time">03:45</span></div>
+                <div class="track-item"><span class="track-title">12. Rage (Re-Edit)</span> <span class="track-time">01:07</span></div>
+    <!-- ASCII Art Background -->
+    <div class="ascii-art-container" id="ascii-container"></div>
+
+    <script>
+        const rawAscii = `                                                                                  .:=*#**+=-:..                                                                  
+                                                                                  :=%@@@@@@%*+-:..                                                               
+                                                            ..                    .-*@@@@@@@@@@*+-:..  ............                                              
+                                                         ...::..                  ..-+%@@@@%@@@@@%+-.......:.::--::....                                ..        
+                                                       ...:-...                     .:=*@@@@%###%@#-:.......::--=++*=:..                               ..        
+                                                       ..:...            .....       ..:=*@@@@%*+=-:.::==+=-::-+******:..                                        
+                                                          .             ..:::::.....   ..:=*@@@@#+-::-*@@@%*=-::-*++**+:..                                       
+                                                                         ..:==++=-::..   ..:=*%@@@%#*==+#@@@@#+=--++++#:..                                       
+                                                                       .....::-=*-::.......:::=*%@@@@#+==+*%@@@%*+====+-..                                       
+                                                                 ........:.::-=---::::=::::-..:-**%@@@@#+===+#@@@@#**==-..                                       
+                                                          ..........:.....................-:..:-::-+#@@@@%*=-=+*%@@@%*+-..                                       
+                                                        ....:--:.............:::..     ...:.........:=*%@@@@#+=-=*#@@#%+=-..                                     
+         ...                                            ....::.......:-::........      ..........   ..:-+#@@@@%*+===*%@@@#+-:.                                   
+       ..:...                                            ..........::-:.....          .....     ....   ..:=+#@@@@%*+++*%@@@#+-:.                                 
+       .--:..                                      .......    ....::....             .......    ....      .:-+#@@@@@#*++*%@@@#+-:.                               
+       ..:...                                    ...:=---......:......               ..:-=:...              ..:+*#@@@@@#**#%@@@%+-:.                             
+        ....                                   ...:===-:::-:--:...                    ...::+:..               ..:==*#@@@@@%#%@@@@#+-..                           
+                                             ....:::-::-=--=:...                         ..:=...                ...:-=*#@@@@@@@@@@@*=:.                          
+                                            .......::=-:-+:...                           ...=:..                    ..:-=+#@@@@@@@@@#=:.                         
+                                       ...   .....:=-::=-:..                              ..-:..      ......       ....:::-=+*%@@@@@@=:.                         
+                                     ...-.......:--::-+:..         ...                    ...=..      ..:-..        ..-:-:...:-=++*+=:.                          
+                                    ...:.....:-+=:-+=+-:..       ...:..                    ..:...     ..:-:..   .......-::..   .......                           
+                                    ..:-...-==*=-:-=+**::.       ..--..                    ..::..      ..:=... ..::::...=:..                                     
+                                   ..:=:-::==*+==-+==+-*-..     ..:=:..                    ...=...     ...=:.....:::::..:-...                                    
+                                   ..-=+-:-=*++***+-+-:::..    ..:=:..   .                  ...:..      ..:=... .........:-...                                   
+                                   .:=+*=--+=+*##**=*=::...   ..:==:..  ....                 ..:...     ...-:..     ......-:..                                   
+                                  ..:+++=--+=##**#*+#+-:..    .:-*-:.........         ....   ..:-..      ..:=...      ....:=...                                  
+                                  ..:++==-++++#+#***#+-:...  ..:+%=-:........        ..:...  ...+:..     ..:*:.............:-..                                  
+                                   .:===*==+**+=*=**#=--:..  ..-*+#=--.......      ...:-...   ..:=...    ...:-....:.......::-:..                                 
+                                   .:-==++===*--*=#@#+==:.. ..:=-=#=**::::...     ..:-:=...   ...=:..     ..:=::..-.......:=-=:..                                
+                                   ..--==+==+=-==+##++==:.. ..:=--+==#=-::...     ..=::-..     ..:+:..    ..:*-::.-........:===:..                               
+                                   ..:-:-+*-::-=+=---+=+-....:*--:-=-*-+-::..    ..:+-+:..     ..:=:..    ..:+*-:.:-.......::*++:..                              
+                                   ...::::+:........:++*-:..:-=+-:-=--=--+:..    ..---+:....    ..:-...    .:-+=:..:-:::-...::=:=:..                             
+                                    ....:-:..      .:=+#=::-=+=-:::-=-=---:..   ..:--=:::=:..    ..=:..    .:-**::::=-:-=:...:=::..                              
+                                     ..:=:..       .:-++*::::++=::.:--=--=:.   ..::===::-*:..    ..:=...   .:=*==::-=+=++:...:-=...                     .........
+                                    ..:+:...       ..:==+-:::-++=::.:-*=+-..  ..:*-*+:::=#-:.    ...-:..   .:=+=+-:-*+*=*:...::+:..                   ...........
+                                    ..:+::..        ..-==+-::--=*+-::-+=+:..  ..:#-*-:::=#-:.     ..:=...  ..:*==+--=#+**:...:--:..                ........      
+                                    ..:+:--..       ..:=-++*===*%%**--+==:.   .:-*=+:.::*+:..      ..=:..  ..:+==+=--*#+=::.:-+--..               .......        
+                                    ..:=:::..        ..::-+***+#%%***=++:..  ..:=++=:.:-+-:.       ...:..   ..:---+--=+*+-::-+-+-:..              ......         
+                                    ...-:...           ..:=*=*=-==--=-+-:.....:-*=*-:..-=:..     ....:-.........:-=+--*+**-=-::--:..              ...............
+                                     ..::..             ..::=:::....::=:...::-=*+=*::..:........:::==:-:....=....:-==--+++*-:..:=-..              ...............
+                                     ..::..              ...-:......:*::::--=+=-+-*::..:::::::-=**===*=-:...:-...:--*--==*==:...=:..            .................
+                                     ..::....             ..... ...:+---=+=**=--+=+-:--=**=+*++*=**=-+-=.....=:...:-=+----+*:...:-..           ...:.......     ..
+                                     ...=:::....               ..:-+==+#++===+#*#=*=-+*=--==*====-::-+::.....:=...:-==+-:-=-=:...-..           ..........        
+                                     ...::-++::.....         ...:+==***+**=*++==*=+::..::::::::-+:::-:...  ...:...:-=+=+-----:.....             ........         
+                                    ...::-====-:::::.........::=*+=---=+**+*=--=*==:.. .......:-:::-+:..   ...=...:+-+-==:--:..                 .........        
+                                     ......:::::-+-=*--=+====+*++*-:::-#*+=----=*=+:..   ....:-=::-+=:..  ..:-=..:====::=--::..                  ..........      
+                                 ..........::-+=*+*+*+**=----------==+++=------=*=+-:......::-=::-*=+:.. ..:++::::-++:::-*-:..                    .....::..      
+                         .........::::-=======----==%+***=====--::::--+=-----=+=*=+-*:..:+---+---+--+:...::+++---**=+::::+*-:..                      .....       
+                       ..:-=-=====-----=======-::::::::::............::=++===*++*=*=++:::===+--==--::...:==+=+=*+***==:::-*+-:.                                  
+                      ..:-=----===+=::::...............              ....::-+*++*=*==*-::-*+--+--::::::==-+=#+*****+*=+---**+:..                                 
+                    ...-==-:::...........                                ....:::--*==**-::+-=---::::-+=-=+=+=**++*=#**+*==+**+:.                                 
+                    ..:::......                                               ...:-*=**=::==-----=+=====*=+=*+==++--++***#+#**:..                                
+                    ..:=..........                                              ..:-+*+*-:-*+=====+**+*==+---===*-::.::=#*****=:.                                
+                     ..-:.......=:.                                              ..:-*#=*---=--=****#+**-----==**-:. ...:-****+:..                               
+                     ..:=:........                                                ..:-++==-:+::::=------:::--=+**-:.   ..:-+#**+:..                              
+                     ...-:...                                                       ..:=*+=--+:..::+--:::::--=++*:..     .:=%*#++:..                             
+                      ..:+...                                                        ..:-===---:...:-+--:::--=+++-:.     .:=%#*=-=:..                            
+                      ..:=:..                                                         ...:::=-=-:...::==-----++++-:.     .:=%%=:::-:..                ...        
+                       ..:-:..                                                           ...:+-=-:.....:=---==*+=*:..    .:=%+-....-:..              .....       
+                       ..:-:..                                        ............         ..:-===:.. ..:-+===+*+==:..   .:-+::.  ....                ...        
+                        ..:+:..                                 ........:----::.....         ..::-=..   ..:-+=+****=:... ..::..                                  
+                         ..--..                            ......::--=:.......::--:.           ......    ..::++#*#*#+-:.......                                   
+                         ..:+:..                       .....::-+=::..................                      ..-*#**+==+---==:..                                   
+                          ..:=:..                  .....::==::......             ...                        .:-**+*-:::-:....                                    
+                          ..:=:.........       .....:-+-::....                              ......           .:-++*-:....                                        
+                           ..:+:::::....    ....::+-:.....                                  ..:=...           ..:=*+=:..                                         
+                            ..--:.....  ....::=-::....                          .            ...:...           ..::=++-:..                                       
+                            ..:=:.. ....::-+-:....                                     .....   ...=...        ....:::-+=::...   .....                            
+                             ..:+::..::=*=-:... .......                               ..:-:..   ...=:...      ..:==:::::-=-:.....:::..                           
+                              ..:--==-::-=:..  ..:=+=:..                              .:-#-:..   ...:-...     ..::+==::::::==::......                            
+        .                      ..:::::--+:.. ..:-+*##=:.                              .:-*%=:.     ...-:...    ...:==+-::...::==:::...                           
+      .....                    .:-=+++**-:...:=+%%@%=-..                               :=*@%+-.     ...:-:...    ..:-+==:.......:=-::.....                       
+      .....                   ..-*#%%%%=::::-=+#@@*%=:.                               .:+%@@%+-.      ...--...    ..::+=*::... ....:==--:.....                   
+     .......               ...::=+#@@@+-::=#%#++*##+:..                              .:=#@@@@%+-..      ..:-:...    ..:=-==:..    ......::=-:..                  
+   ........               ..:==*++%+*+-:.::----=*%*-..                              .:=*@@%%@@%+-:.      ...:-....   ..::+-+-..       .....:+:..                 
+   ........               ..:+@%**==+:........:-#*-:.                              .:=*@@%*+#%@@*=:..      ....:.........:==-:...        ..:=...                 
+  ........            ......:-+#---*:..    ..:-=**:..                             .:=#@@@*=-#+#@@%*=:..      ...-+::.......:-=::...      ..-:..                  
+..........         ...::::::::::::=:..     ..:++*=:.                            ..:=#@@@*=--#*+*%@@%+-:.       ...:-=-.......:=-::....  ..:-:..                  
+.......          ...:----::......=:..      ..:+**-:.                          ..:=*@@@@*=-=*@@*++*%@@#+-..       .....:==:....::==:::.....:=:..                  
+                ..:===--::......:-..       ..::-=:..                         ..-+@@@@@#=:=#@@@@%+++%@@@*-..          ....:---::::::==::::::=:..                  
+               ..-====-:...  ..:=...      ...:-::..                         ..-**@@@@@#+-:-+%@@*==+%@@@#=:.             .....:--:::::::::-=-..                   
+              .:-====:...   ...-...      ...::-:..                           ..:-=*%@@@@*=--=##==+#@@@*=:...:..             .....-::.:::-+-:..                   
+            ..::===-:..     ..::..       ..::=:...                              ..:=*@@@@%*=--+=*%@@%+-.....=..                ...=::::--+:..                    
+           ...:-=-:..     ...::..       ...:-:...                                 ..:=*%@@@%*++*%@@#+:.  ..:...                  ....::--+:..                    
+           ..::....      ...--..        ...:::..                                    ..:=+#@@@@%%@@%+-.    ...                      ..::-+:..                     
+           .....       ...-=:...       ...:-:..                                        .:-=*%@@@@@#=:                               ..:=::..                     
+           ...        ..:*-::..        ..:-:...                                          ..:-*%@@@#=:                                ..:-+:..                    `;
+
+        const asciiContainer = document.getElementById('ascii-container');
+        if (asciiContainer) {
+            let htmlContent = '';
+            for (let i = 0; i < rawAscii.length; i++) {
+                const char = rawAscii[i];
+                if (char === '\n') {
+                    htmlContent += '\n';
+                } else if (char === ' ') {
+                    htmlContent += ' ';
+                } else {
+                    htmlContent += `<span class="ascii-char">${char}</span>`;
+                }
+            }
+            asciiContainer.innerHTML = htmlContent;
+        }
+
+        const toggles = [
+            { btn: 'music-toggle', menu: 'music-menu' },
+            { btn: 'socials-toggle', menu: 'socials-menu' },
+            { btn: 'about-toggle', menu: 'about-menu' },
+            { btn: 'external-toggle', menu: 'external-menu' },
+            { btn: 'upcoming-toggle', menu: 'upcoming-menu' }
+        ];
+
+        const panels = {
+            'blue-money-btn': 'blue-money-panel',
+            'sirenic-btn': 'sirenic-panel',
+            'nihilism-btn': 'nihilism-panel',
+            'pessimistic-v1-btn': 'pessimistic-v1-panel',
+            'blue-money-deluxe-btn': 'blue-money-deluxe-panel',
+            'whimsy-btn': 'whimsy-panel',
+            'broken-btn': 'broken-panel',
+            'motion-btn': 'motion-panel',
+            'pessimistic-v2-btn': 'pessimistic-v2-panel',
+            'tpshm-btn': 'tpshm-panel'
+        };
+
+        toggles.forEach(({ btn, menu }) => {
+            const button = document.getElementById(btn);
+            const subMenu = document.getElementById(menu);
+
+            if (button && subMenu) {
+                button.addEventListener('click', () => {
+                    const isOpen = subMenu.classList.contains('open');
+                    
+                    if (isOpen) {
+                        subMenu.classList.remove('open');
+                        button.setAttribute('aria-expanded', 'false');
+                        
+                        // Fade out panels if closing parent menu
+                        if (btn === 'music-toggle' || btn === 'upcoming-toggle') {
+                            Object.values(panels).forEach(pId => {
+                                const p = document.getElementById(pId);
+                                if (p) p.classList.remove('active');
+                            });
+                        }
+                    } else {
+                        subMenu.classList.add('open');
+                        button.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            }
+        });
+
+        // Release panel toggle logic
+        Object.entries(panels).forEach(([btnId, panelId]) => {
+            const btn = document.getElementById(btnId);
+            const panel = document.getElementById(panelId);
+
+            if (btn && panel) {
+                btn.addEventListener('click', () => {
+                    const isActive = panel.classList.contains('active');
+                    
+                    // Hide all panels
+                    Object.values(panels).forEach(pId => {
+                        const p = document.getElementById(pId);
+                        if (p) p.classList.remove('active');
+                    });
+
+                    // Toggle clicked panel if it wasn't active
+                    if (!isActive) {
+                        panel.classList.add('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
